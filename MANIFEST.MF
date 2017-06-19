@@ -1,0 +1,4 @@
+Manifest-Version: 1.0.39
+Created-By: HY.ZhengWei@qq.com  2015
+Specification-Version: 1.0.39  2017-06-19
+SourceCode: https://github.com/HY-ZhengWei/hy.common.flex
