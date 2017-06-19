@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  verticalAlign="middle"
+		  width="100%" height="100%"
+		  creationComplete="creationCompleteHandler(event)">
+	
+	<!-- ZhengWei(HY) Create 2016-09-28 简单的条件 -->
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			import org.hy.common.Help;
+			
+			
+			
+			/** 关系 */
+			[Bindable]
+			public static var $Relation:ArrayCollection = new ArrayCollection([
+				"AND"
+			   ,"OR"
+			]);
+			
+			/** 操作类型 */
+			[Bindable]
+			public static var $OperationType:ArrayCollection = new ArrayCollection([
+				"="
+			   ,"LIKE"
+			   ,">"
+			   ,">="
+			   ,"<"
+			   ,"<="
+			   ,"!="
+			]);
+			
+			/** 条件名称 */
+			[Bindable]
+			public var ConditionNames:ArrayCollection  = new ArrayCollection([]);
+			
+			/** 条件数值 */
+			[Bindable]
+			public var ConditionValues:ArrayCollection = new ArrayCollection([]);
+			
+			/** 条件名称下拉框显示的字段 */
+			[Bindable]
+			public var labelFieldConditionName:String = "";
+			
+			/** 条件数据下拉框显示的字段 */
+			[Bindable]
+			public var labelFieldConditionValue:String = "";
+			
+			/** 条件名称下拉框显示字段对应的真实属性值 */
+			[Bindable]
+			public var valueFieldConditionName:String = "";
+			
+			/** 条件数据下拉框显示字段对应的真实属性值 */
+			[Bindable]
+			public var valueFieldConditionValue:String = "";
+			
+			/** 参数组件的宽度 */
+			[Bindable]
+			public var widthConditionName:uint = 150;
+			
+			/** 参数组件的宽度 */
+			[Bindable]
+			public var widthConditionValue:uint = 150;
+			
+			/** 关系的宽度 */
+			[Bindable]
+			public var widthRelation:uint       = 50;
+			
+			/** 操作类型的宽度 */
+			[Bindable]
+			public var widthOperationType:uint  = 55;
+			
+			
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				Help.setComboBoxReadOnlyUI(this.m_Relation);
+				Help.setComboBoxReadOnlyUI(this.m_OperationType);
+			}
+			
+			
+			
+			/**
+			 * 获取 "条件名称" 下拉列表框对应的数值
+			 * 
+			 * @author      ZhengWei(HY)
+			 * @createDate  2016-09-29
+			 * @version     V1.0
+			 */
+			public function get valueByConditionName():String
+			{
+				return Help.getComboBoxValue(this.m_ConditionName ,this.valueFieldConditionName);
+			}
+			
+			
+			
+			/**
+			 * 获取 "条件数值" 下拉列表框对应的数值
+			 * 
+			 * @author      ZhengWei(HY)
+			 * @createDate  2016-09-29
+			 * @version     V1.0
+			 */
+			public function get valueByConditionValue():String
+			{
+				return Help.getComboBoxValue(this.m_ConditionValue ,this.valueFieldConditionValue);
+			}
+			
+			
+			
+			/**
+			 * 获取 "与或关系" 下拉列表框对应的数值
+			 * 
+			 * @author      ZhengWei(HY)
+			 * @createDate  2016-09-29
+			 * @version     V1.0
+			 */
+			public function get valueByRelation():String
+			{
+				if ( this.m_Relation.visible )
+				{
+					return this.m_Relation.selectedItem as String;
+				}
+				else
+				{
+					return "";
+				}
+			}
+			
+			
+			
+			/**
+			 * 获取 "比较" 下拉列表框对应的数值
+			 * 
+			 * @author      ZhengWei(HY)
+			 * @createDate  2016-09-29
+			 * @version     V1.0
+			 */
+			public function get valueByOperationType():String
+			{
+				return this.m_OperationType.selectedItem as String;
+			}
+			
+			
+			
+			/**
+			 * 生成查询条件(Where)的SQL
+			 * 
+			 * @author      ZhengWei(HY)
+			 * @createDate  2016-09-28
+			 * @version     V1.0
+			 */
+			public function getSQL():String
+			{
+				var v_SQL:String = "";
+				
+				if ( this.m_Relation.visible )
+				{
+					v_SQL += " " + this.m_Relation.selectedItem as String;
+				}
+				
+				v_SQL += " " + this.valueByConditionName;
+				
+				v_SQL += " " + this.m_OperationType.selectedItem as String;
+				
+				if ( $OperationType[1] == (this.m_OperationType.selectedItem as String) )
+				{
+					v_SQL += " '%" + this.valueByConditionValue + "%'";
+				}
+				else
+				{
+					v_SQL += " '" + this.valueByConditionValue + "'";
+				}
+				
+				return v_SQL;
+			}
+			
+			
+			
+			/**
+			 * 生成Update属性设置(Set)的SQL
+			 * 
+			 * @author      ZhengWei(HY)
+			 * @createDate  2016-09-28
+			 * @version     V1.0
+			 */
+			public function getSQLUpdate():String
+			{
+				var v_SQL:String = "";
+				
+				v_SQL += " " + this.valueByConditionName;
+				
+				v_SQL += " " + $OperationType[0];
+				
+				v_SQL += " '" + this.valueByConditionValue + "'";
+				
+				return v_SQL;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<s:ComboBox id="m_Relation"   
+				width="{widthRelation}"
+				restrict="{$Relation}"
+				dataProvider="{$Relation}"
+				selectedItem="{$Relation.getItemAt(0)}"
+				visible="false" />
+	
+	<s:ComboBox id="m_ConditionName"  
+				width="{widthConditionName}"
+				dataProvider="{ConditionNames}"
+				labelField="{labelFieldConditionName}" />
+	
+	<s:ComboBox id="m_OperationType"   
+				width="{widthOperationType}"
+				restrict="{$OperationType}"
+				dataProvider="{$OperationType}"
+				selectedItem="{$OperationType.getItemAt(0)}"
+				textAlign="center" />
+	
+	<s:ComboBox id="m_ConditionValue" 
+				width="{widthConditionValue}"
+				dataProvider="{ConditionValues}"
+				labelField="{labelFieldConditionValue}" />
+	
+</s:HGroup>

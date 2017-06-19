@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<!-- ZhengWei(HY) Create 2015-07-16 布局组件。使其有背景色、边框色、边框线宽度大小等特性 -->
+	
+	<fx:Script>
+		<![CDATA[
+			import org.hy.common.Help;
+			
+						
+			
+			/** 背景色（默认是白色） */
+			private var _backgroundColor:uint = Help.toColor("#FFFFFF");
+			
+			/** 边框色（默认是白色） */
+			private var _borderColor:uint     = Help.toColor("#FFFFFF");
+			
+			/** 边框大小 */
+			private var _borderSize:uint      = 0;
+			
+			/** 圆角半径 */
+			private var _radiusSize:Number    = 0;
+			
+			
+			
+			/** 背景色 */
+			[Bindable]
+			public function get backgroundColor():uint
+			{
+				return this._backgroundColor;
+			}
+			
+			public function set backgroundColor(i_BackgroundColor:uint):void
+			{
+				this._backgroundColor = i_BackgroundColor;
+			}
+			
+			
+			
+			/** 边框色 */
+			[Bindable]
+			public function get borderColor():uint
+			{
+				return this._borderColor;
+			}
+			
+			public function set borderColor(i_BorderColor:uint):void
+			{
+				this._borderColor = i_BorderColor;
+			}
+			
+			
+			
+			/** 边框大小 */
+			[Bindable]
+			public function get borderSize():uint
+			{
+				return this._borderSize;
+			}
+			
+			public function set borderSize(i_BorderSize:uint):void
+			{
+				this._borderSize = i_BorderSize;
+			}
+
+			
+			
+			/** 圆角半径 */
+			[Bindable]
+			public function get radiusSize():Number
+			{
+				return _radiusSize;
+			}
+
+			public function set radiusSize(value:Number):void
+			{
+				_radiusSize = value;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<s:Rect width="100%" height="100%" radiusX="{this.radiusSize}" radiusY="{this.radiusSize}">
+		<s:fill>
+			<s:LinearGradient>
+				<s:GradientEntry color="{this.backgroundColor}" />
+			</s:LinearGradient>
+		</s:fill>
+		
+		<!-- 边框 -->
+		<s:stroke>
+			<s:SolidColorStroke color="{this.borderColor}" weight="{this.borderSize}" />
+		</s:stroke>
+	</s:Rect>
+	
+	
+	<!-- 阴影 -->
+	<s:RectangularDropShadow blurX="10" blurY="10"
+							 alpha="0.32" distance="4"
+							 blRadius="5" brRadius="5"
+							 angle="90" color="#000000" 
+							 left="0" top="0" right="0" bottom="0"/>
+	
+</s:Group>

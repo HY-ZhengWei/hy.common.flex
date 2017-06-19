@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 enabled="{this.enabled}">
+	
+	<!-- ZhengWei(HY) Create 2015-07-24 图片按钮 -->
+	
+	
+	<fx:Metadata>
+		[Event(name="clickOn" ,type="org.hy.common.ui.event.ButtonImageEvent")]
+	</fx:Metadata>
+	
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import org.hy.common.ui.event.ButtonImageEvent;
+			
+			/** 按钮标签字体的大小 */
+			private var _fontSize:Number;
+			
+			/** 按钮标签字体的颜色 */
+			private var _fontColor:uint;
+			
+			/** 按钮标签字符的是否使用粗体 */
+			private var _fontWeight:String;
+			
+			/** 组件作用一个整体是否可以接受用户交互 */
+			private var _enabled:Boolean;
+			
+			
+			
+			/** 按钮的标签名称 */
+			[Bindable]
+			public function get label():String
+			{
+				return this.m_ButtonLabel.text;
+			}
+			
+			public function set label(i_Label:String):void
+			{
+				this.m_ButtonLabel.text = i_Label;
+			}
+			
+			
+			
+			/** 按钮标签字体的大小 */
+			[Bindable]
+			public function get fontSize():Number
+			{
+				return this._fontSize;
+			}
+			
+			public function set fontSize(i_FontSize:Number):void
+			{
+				this._fontSize = i_FontSize;
+			}
+			
+			
+			
+			/** 按钮标签字体的颜色 */
+			[Bindable]
+			public function get fontColor():uint
+			{
+				return this._fontColor;
+			}
+			
+			public function set fontColor(i_Color:uint):void
+			{
+				this._fontColor = i_Color;
+			}
+			
+			
+			
+			/** 按钮标签字符的是否使用粗体 */
+			[Bindable]
+			public function get fontWeight():String
+			{
+				return this._fontWeight;
+			}
+			
+			public function set fontWeight(i_FontWeight:String):void
+			{
+				this._fontWeight = i_FontWeight;
+			}
+			
+			
+			
+			/** 组件作用一个整体是否可以接受用户交互 */
+			[Bindable]
+			public override function get enabled():Boolean
+			{
+				return this._enabled;
+			}
+			
+			public override function set enabled(i_Enabled:Boolean):void
+			{
+				this._enabled = i_Enabled;
+				
+				if ( this.m_ButtonImage != null )
+				{
+					this.m_ButtonImage.enabled            = i_Enabled;
+					this.m_ButtonImage.buttonMode         = i_Enabled;
+					this.m_ButtonImage.doubleClickEnabled = i_Enabled;
+					this.m_ButtonImage.mouseEnabled       = i_Enabled;
+					this.m_ButtonImage.mouseChildren      = i_Enabled;
+				}
+				
+				if ( this.m_ButtonLabel != null )
+				{
+					this.m_ButtonLabel.enabled            = i_Enabled;
+					this.m_ButtonLabel.buttonMode         = i_Enabled;
+					this.m_ButtonLabel.doubleClickEnabled = i_Enabled;
+					this.m_ButtonLabel.mouseEnabled       = i_Enabled;
+					this.m_ButtonLabel.mouseChildren      = i_Enabled;
+					this.m_ButtonLabel.alpha              = (i_Enabled ? 1 : 0.5);
+				}
+				
+				if ( this.m_ButtonImage_Down != null )
+				{
+					this.m_ButtonImage_Down.enabled            = i_Enabled;
+					this.m_ButtonImage_Down.buttonMode         = i_Enabled;
+					this.m_ButtonImage_Down.doubleClickEnabled = i_Enabled;
+					this.m_ButtonImage_Down.mouseEnabled       = i_Enabled;
+					this.m_ButtonImage_Down.mouseChildren      = i_Enabled;
+					
+				}
+			}
+			
+			
+			
+			/** 组件正常情况下的图片显示 */
+			[Bindable]
+			public function set image(i_Image:Object):void
+			{
+				this.m_ButtonImage.source = i_Image;
+			}
+			
+			public function get image():Object
+			{
+				return this.m_ButtonImage.source;
+			}
+			
+			
+			
+			/** 组件被按下时的图片显示 */
+			[Bindable]
+			public function set imageDown(i_ImageDown:Object):void
+			{
+				this.m_ButtonImage_Down.source = i_ImageDown;
+			}
+			
+			public function get imageDown():Object
+			{
+				return this.m_ButtonImage_Down.source;
+			}
+						
+			
+			
+			protected function mouseDownHandler(event:MouseEvent):void
+			{
+				this.m_ButtonImage.alpha = 0;
+			}
+			
+			protected function mouseUpHandler(event:MouseEvent):void
+			{
+				this.m_ButtonImage.alpha = 1;
+			}
+			
+			protected function mouseOutHandler(event:MouseEvent):void
+			{
+				this.m_ButtonImage.alpha = 1;
+			}
+			
+			protected function clickHandler(i_Event:MouseEvent):void
+			{
+				dispatchEvent(new ButtonImageEvent(i_Event));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<s:Image id="m_ButtonImage_Down" 
+			 width="100%" 
+			 height="100%"
+			 horizontalCenter="0"
+			 verticalCenter="0"
+			 />
+	
+	<s:Image id="m_ButtonImage" 
+			 width="100%" 
+			 height="100%"
+			 horizontalCenter="0"
+			 verticalCenter="0"
+			 buttonMode="true"
+			 mouseDown="mouseDownHandler(event)"
+			 mouseUp="mouseUpHandler(event)"
+			 mouseOut="mouseOutHandler(event)"
+			 click="clickHandler(event)"
+			 />
+	
+	<s:Label id="m_ButtonLabel" 
+			 horizontalCenter="0"
+			 verticalCenter="0"
+			 fontSize="{this.fontSize}"
+			 fontWeight="{this.fontWeight}" 
+			 color="{this.fontColor}" 
+			 buttonMode="true"
+			 mouseDown="mouseDownHandler(event)"
+			 mouseUp="mouseUpHandler(event)"
+			 click="clickHandler(event)"
+			 />
+	
+</s:Group>

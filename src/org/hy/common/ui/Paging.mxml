@@ -1,0 +1,752 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%" 
+		  height="22"
+		  creationComplete="paging_creationCompleteHandler(event)">
+	
+	<!-- ZhengWei(HY) Create 2015-07-07 分页组件(首页、上一页、下一页、尾页) -->
+	<!-- ZhengWei(HY) Add    2015-07-14 分页组件(更多、全部) -->
+	
+	<fx:Metadata>
+		[Event(name="changePageNo" ,type="org.hy.common.ui.event.PagingEvent")]
+	</fx:Metadata>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		.Paging_First
+		{
+			fontSize:11;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_Up
+		{
+			fontSize:11;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_PageNo
+		{
+			fontSize:11;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_Down
+		{
+			fontSize:11;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_Last
+		{
+			fontSize:11;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_More
+		{
+			fontSize:11;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_All
+		{
+			fontSize:11;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_Reload
+		{
+			fontSize:11;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_Total
+		{
+			fontSize:12;
+			fontFamily:微软雅黑;
+		}
+		
+		.Paging_ShowSize
+		{
+			fontSize:12;
+			fontFamily:微软雅黑;
+		}
+		
+	</fx:Style>
+	
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.events.Event;
+			import flash.utils.getDefinitionByName;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.events.SliderEvent;
+			
+			import org.hy.common.Help;
+			import org.hy.common.ui.event.PagingEvent;
+			
+			import spark.components.supportClasses.Skin;
+			import spark.events.IndexChangeEvent;
+			
+			
+			/**
+			 * 分页类型常量：普通分页。
+			 * 组件有：首页、上一页、下一页、尾页、跳转页号、刷新、每页分页数、统计信息
+			 */
+			public static const $Type_Normal:String = "PT_Noraml";
+			
+			/**
+			 * 分页类型常量：PLSQL分页。
+			 * 组件有：更多(下一页)、全部(尾页)、刷新、每页分页数、统计信息
+			 */
+			public static const $Type_PLSQL:String  = "PT_PLSQL";
+			
+			
+			
+			/** 当前页号。下标从1开始 */
+			private var _PageNo:int                 = 1;
+			
+			/** 最大页号 */
+			private var _PageMax:int                = 1;
+			
+			/** 总记录数 */
+			private var _TotalSize:int              = 0; 
+			
+			/** 是否触发各类事件 */
+			private var _isTriggerEvent:Boolean     = true;
+			
+			/** 是否由用户定义(或设置)过每页记录数 */
+			private var _isSetPagePerSize:Boolean   = false;
+			
+			/** 显示当前分页页面中的记录数 */
+			private var _showSize:String            = "";
+			
+			/** 事件的动作类型 */
+			private var _actionType:String          = PagingEvent.$ActionNULL;
+			
+			/** 分页类型 */
+			private var _PagingType:String          = $Type_Normal;
+			
+			/** 所有标签文字 */
+			private var _labels:Object              = {"firstPage":"First" 
+				                                      ,"upPage":"Previ" 
+													  ,"downPage":"Next" 
+													  ,"lastPage":"Last" 
+													  ,"more":"More" 
+													  ,"all":"All"
+													  ,"reload":"Reload"
+													  ,"perSize":"The number of records per page"
+			                                          };
+			
+			[Bindable]
+			private var _gPublic_Left:int;
+			
+			
+			
+			[Bindable]
+			public var iconFirstPage:Class;
+			
+			[Bindable]
+			public var iconUpPage:Class;
+			
+			[Bindable]
+			public var iconDownPage:Class;
+			
+			[Bindable]
+			public var iconLastPage:Class;
+			
+			[Bindable]
+			public var iconMore:Class;
+			
+			[Bindable]
+			public var iconAll:Class;
+			
+			[Bindable]
+			public var iconReload:Class;
+			
+			
+			
+			public function init():void
+			{
+				this._isTriggerEvent = false;
+				
+				this._PageNo   = 1;
+				this._PageMax  = 1;
+				this.totalSize = 0;
+				
+				var v_Pages:ArrayCollection = new ArrayCollection();
+				v_Pages.addItem(this._PageNo);
+				
+				this.m_PageNo.dataProvider = v_Pages;
+				this.m_PageNo.selectedItem = this._PageNo;
+				this._showSize             = "";
+				this.m_ShowSize.visible    = false;
+				
+				this.f_SetViewEnable();
+				
+				this._isTriggerEvent = true;
+			}
+			
+			
+			
+			protected function paging_creationCompleteHandler(event:FlexEvent):void
+			{
+				if ( this._PagingType == $Type_Normal )
+				{
+					this._gPublic_Left = this.m_GroupNormal.width + 5;
+				}
+				else if ( this._PagingType == $Type_PLSQL )
+				{
+					this._gPublic_Left = this.m_GroupPLSQL.width + 5;
+				}
+			}
+			
+			
+			
+			/**
+			 * 事件的动作类型
+			 */
+			public function get actionType():Object
+			{
+				return this._actionType;
+			}
+			
+						
+			
+			/**
+			 * 分页类型
+			 */
+			[Bindable]
+			public function get type():String
+			{
+				return this._PagingType;	
+			}
+			
+			public function set type(i_Type:String):void
+			{
+				if ( Help.isNull(i_Type) )
+				{
+					this._PagingType = $Type_Normal;
+				}
+				
+				if ( i_Type == $Type_Normal )
+				{
+					this.m_GroupNormal.visible = true;
+					this.m_GroupPLSQL.visible  = false;
+					this._gPublic_Left         = this.m_GroupNormal.width + 5;
+					this._PagingType           = i_Type;
+				}
+				else if ( i_Type == $Type_PLSQL )
+				{
+					this.m_GroupNormal.visible = false;
+					this.m_GroupPLSQL.visible  = true;
+					this._gPublic_Left         = this.m_GroupPLSQL.width + 5;
+					this._PagingType           = i_Type;
+				}
+				else
+				{
+					return;
+				}
+			}
+			
+			
+			
+			/**
+			 * 所有按钮的标签文字
+			 */
+			[Bindable]
+			public function get labels():Object
+			{
+				return this._labels;
+			}
+			
+			public function set labels(i_Labels:Object):void
+			{
+				if ( i_Labels == null )
+				{
+					return;
+				}
+				
+				if ( !Help.isNull(i_Labels.firstPage) )
+				{
+					this.m_FirstPage.label = i_Labels.firstPage;
+				}
+				
+				if ( !Help.isNull(i_Labels.upPage) )
+				{
+					this.m_UpPage.label = i_Labels.upPage;
+				}
+				
+				if ( !Help.isNull(i_Labels.downPage) )
+				{
+					this.m_DownPage.label = i_Labels.downPage;
+				}
+				
+				if ( !Help.isNull(i_Labels.lastPage) )
+				{
+					this.m_LastPage.label = i_Labels.lastPage;
+				}
+				
+				if ( !Help.isNull(i_Labels.more) )
+				{
+					this.m_More.label = i_Labels.more;
+				}
+				
+				if ( !Help.isNull(i_Labels.all) )
+				{
+					this.m_All.label = i_Labels.all;
+				}
+				
+				if ( !Help.isNull(i_Labels.reload) )
+				{
+					this.m_Reload.label = i_Labels.reload;
+				}
+				
+				if ( !Help.isNull(i_Labels.perSize) )
+				{
+					this.m_PagePerSize.toolTip = i_Labels.perSize;
+				}
+				
+				this._labels = i_Labels;
+			}
+			
+			
+			
+			/**
+			 * 设置按钮皮肤
+			 */
+			public function set iconSkin(i_SkinClass:Class):void
+			{
+				// 可反射类名为类的原型
+				// var v_SkinClass:Class = getDefinitionByName(i_SkinClassName) as Class;
+				
+				this.m_FirstPage.setStyle("skinClass" ,i_SkinClass);
+				this.m_UpPage   .setStyle("skinClass" ,i_SkinClass);
+				this.m_DownPage .setStyle("skinClass" ,i_SkinClass);
+				this.m_LastPage .setStyle("skinClass" ,i_SkinClass);
+				this.m_More     .setStyle("skinClass" ,i_SkinClass);
+				this.m_All      .setStyle("skinClass" ,i_SkinClass);
+				this.m_Reload   .setStyle("skinClass" ,i_SkinClass);
+			}
+			
+						
+			
+			[Bindable]
+			public function get pageNo():int
+			{
+				return this._PageNo;
+			}
+			
+			public function set pageNo(i_PageNo:int):void
+			{
+				if ( i_PageNo < 1 )
+				{
+					return;
+				}
+				if ( i_PageNo > this.pageMax )
+				{
+					return;
+				}
+				if ( this.pageNo == i_PageNo )
+				{
+					return;
+				}
+				
+				var v_PageNoOld:int        = this._PageNo;
+				this._PageNo               = i_PageNo;
+				this.m_PageNo.selectedItem = this.pageNo;
+				dispatchEvent(new PagingEvent(PagingEvent.$E_ChangePageNo ,this._PageNo ,v_PageNoOld ,this.m_PagePerSize.value ,this._actionType));
+			}
+			
+			
+			
+			[Bindable]
+			public function get pageMax():int
+			{
+				return this._PageMax;	
+			}
+			
+			public function set pageMax(i_PageMax:int):void
+			{
+				if ( i_PageMax < 1 )
+				{
+					return;
+				}
+				
+				this._PageMax = i_PageMax;
+				
+				var v_Pages:ArrayCollection = new ArrayCollection();
+				for (var v_Index:int=1; v_Index<=this.pageMax; v_Index++)
+				{
+					v_Pages.addItem(v_Index);
+				}
+				
+				this.m_PageNo.dataProvider = v_Pages;
+				
+				if ( this.pageNo > this.pageMax  )
+				{
+					this._PageNo               = this.pageMax;
+					this.m_PageNo.selectedItem = this.pageNo;
+				}
+				
+				this.f_SetViewEnable();
+			}
+			
+			
+			
+			[Bindable]
+			public function get totalSize():int
+			{
+				return this._TotalSize;	
+			}
+			
+			public function set totalSize(i_TotalSize:int):void
+			{
+				if ( i_TotalSize < 0 )
+				{
+					return;
+				}
+				
+				this._TotalSize = i_TotalSize;
+			}
+			
+			
+			
+			/**
+			 * 每页记录数
+			 */
+			[Bindable]
+			public function get pagePerSize():int
+			{
+				return this.m_PagePerSize.value;	
+			}
+			
+			public function set pagePerSize(i_PagePerSize:int):void
+			{
+				this.m_PagePerSize.value = i_PagePerSize;
+			}
+			
+			/**
+			 * 不触发事件，只是简单的设置每页记录数 
+			 */
+			public function set pagePerSizeText(i_PagePerSize:int):void
+			{
+				this._isTriggerEvent = false;
+				this.m_PagePerSize.value = i_PagePerSize;
+				this._isTriggerEvent = true;
+			}
+			
+			
+			
+			/**
+			 * 每页记录数最小值
+			 */
+			[Bindable]
+			public function get pagePerSizeMin():int
+			{
+				return this.m_PagePerSize.minimum;	
+			}
+			
+			public function set pagePerSizeMin(i_PagePerSizeMin:int):void
+			{
+				this.m_PagePerSize.minimum = i_PagePerSizeMin;
+			}
+			
+			
+			
+			/**
+			 * 每页记录数最大值
+			 */
+			[Bindable]
+			public function get pagePerSizeMax():int
+			{
+				return this.m_PagePerSize.maximum;	
+			}
+			
+			public function set pagePerSizeMax(i_PagePerSizeMax:int):void
+			{
+				this.m_PagePerSize.maximum = i_PagePerSizeMax;
+			}
+			
+			
+			
+			/**
+			 * 每页记录数条的跨度间隔
+			 */
+			[Bindable]
+			public function get pageInterval():Number
+			{
+				return this.m_PagePerSize.snapInterval;
+			}
+			
+			public function set pageInterval(i_PageInterval:Number):void
+			{
+				this.m_PagePerSize.snapInterval = i_PageInterval;
+			}
+			
+			
+			
+			/**
+			 * 是否由用户定义(或设置)过每页记录数
+			 */
+			public function get isSetPagePerSize():Boolean
+			{
+				return this._isSetPagePerSize;
+			}
+			
+			
+			
+			/**
+			 * 显示当前分页页面中的记录数
+			 */
+			[Bindable]
+			public function get showSize():String
+			{
+				return this._showSize;
+			}
+			
+			public function set showSize(i_ShowSize:String):void
+			{
+				if ( i_ShowSize == null || i_ShowSize == "" )
+				{
+					this.m_ShowSize.visible = false;
+				}
+				else
+				{
+					this.m_ShowSize.visible = true;
+				}
+				
+				this._showSize = i_ShowSize;
+			}
+			
+			
+			
+			/**
+			 * 设置按钮的可用性
+			 */
+			protected function f_SetViewEnable():void
+			{
+				if ( 1 >= this.pageMax )
+				{
+					this.m_FirstPage.enabled = false;
+					this.m_UpPage   .enabled = false;
+					this.m_DownPage .enabled = false;
+					this.m_LastPage .enabled = false;
+					this.m_More     .enabled = false;
+					this.m_All      .enabled = false;
+				}
+				else if ( this.pageNo == 1 )
+				{
+					this.m_FirstPage.enabled = false;
+					this.m_UpPage   .enabled = false;
+					this.m_DownPage .enabled = true;
+					this.m_LastPage .enabled = true;
+					this.m_More     .enabled = true;
+					this.m_All      .enabled = true;
+				}
+				else if ( this.pageNo == this.pageMax )
+				{
+					this.m_FirstPage.enabled = true;
+					this.m_UpPage   .enabled = true;
+					this.m_DownPage .enabled = false;
+					this.m_LastPage .enabled = false;
+					this.m_More     .enabled = false;
+					this.m_All      .enabled = false;
+				}
+				else
+				{
+					this.m_FirstPage.enabled = true;
+					this.m_UpPage   .enabled = true;
+					this.m_DownPage .enabled = true;
+					this.m_LastPage .enabled = true;
+					this.m_More     .enabled = true;
+					this.m_All      .enabled = true;
+				}
+			}
+			
+			
+			
+			/**
+			 * 首页按钮的点击事件
+			 */
+			protected function f_FirstPage_clickHandler(event:MouseEvent):void
+			{
+				this._actionType = PagingEvent.$ActionFirstPage;
+				this.pageNo      = 1;
+				
+				this.f_SetViewEnable();
+			}
+			
+			
+			
+			/**
+			 * 上一页按钮的点击事件
+			 */
+			protected function f_UpPage_clickHandler(event:MouseEvent):void
+			{
+				this._actionType = PagingEvent.$ActionUpPage;
+				this.pageNo      = this.pageNo - 1;
+				
+				this.f_SetViewEnable();
+			}
+			
+			
+			
+			/**
+			 * 当前页及跳转页的点击事件
+			 */
+			protected function f_PageNo_changeHandler(event:IndexChangeEvent):void
+			{
+				this._actionType = PagingEvent.$ActionGotoPageNo;
+				this.pageNo      = this.m_PageNo.selectedItem;
+				
+				this.f_SetViewEnable();
+			}
+			
+			
+			
+			/**
+			 * 下一页按钮的点击事件
+			 */
+			protected function f_DownPage_clickHandler(event:MouseEvent):void
+			{
+				this._actionType = PagingEvent.$ActionDownPage;
+				this.pageNo      = this.pageNo + 1;
+				
+				this.f_SetViewEnable();
+			}
+			
+			
+			
+			/**
+			 * 尾页按钮的点击事件
+			 */
+			protected function f_LastPage_clickHandler(event:MouseEvent):void
+			{
+				this._actionType = PagingEvent.$ActionLastPage;
+				this.pageNo      = this.pageMax;
+				
+				this.f_SetViewEnable();
+			}
+			
+			
+			
+			/**
+			 * 更多按钮的点击事件
+			 */
+			protected function f_More_clickHandler(event:MouseEvent):void
+			{
+				this._actionType = PagingEvent.$ActionMore;
+				this.pageNo      = this.pageNo + 1;
+				
+				this.f_SetViewEnable();
+			}
+			
+			
+			
+			/**
+			 * 全部按钮的点击事件
+			 */
+			protected function f_All_clickHandler(event:MouseEvent):void
+			{
+				this._actionType = PagingEvent.$ActionAll;
+				this.pageNo      = this.pageMax;
+				
+				this.f_SetViewEnable();
+			}
+			
+			
+			
+			/**
+			 * 刷新按钮的点击事件
+			 */
+			protected function f_Reload_clickHandler(event:MouseEvent):void
+			{
+				this._actionType = PagingEvent.$ActionReload;
+				dispatchEvent(new PagingEvent(PagingEvent.$E_ChangePageNo ,this._PageNo ,this._PageNo ,this.m_PagePerSize.value ,this._actionType));
+			}
+			
+			
+			
+			/**
+			 * 每页显示记录条数
+			 */
+			protected function f_PagePerSize_changeHandler(event:FlexEvent):void
+			{
+				if ( this.m_PagePerSize.value <= 0 )
+				{
+					return;
+				}
+				
+				this._actionType       = PagingEvent.$ActionPagePerSize;
+				this._isSetPagePerSize = true;
+				
+				if ( _isTriggerEvent )
+				{
+					if ( this.pageNo == 1 )
+					{
+						dispatchEvent(new PagingEvent(PagingEvent.$E_ChangePageNo ,this._PageNo ,this._PageNo ,this.m_PagePerSize.value ,this._actionType));
+					}
+					else
+					{
+						this.pageNo = 1;
+					}
+					
+					this.f_SetViewEnable();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:BasicLayout />
+	</s:layout>
+	
+	<s:Group id="m_GroupLeft" verticalCenter="0" left="0">
+		
+		<s:HGroup id="m_GroupNormal" verticalAlign="baseline" left="0" top="0">
+			<s:Button   id="m_FirstPage" label="{labels.firstPage}" click="f_FirstPage_clickHandler(event)" styleName="Paging_First"  icon="{iconFirstPage}"  width="60" height="22" />
+			<s:Button   id="m_UpPage"    label="{labels.upPage}"    click="f_UpPage_clickHandler(event)"    styleName="Paging_Up"     icon="{iconUpPage}"     width="60" height="22" />
+			<s:ComboBox id="m_PageNo"                               change="f_PageNo_changeHandler(event)"  styleName="Paging_PageNo" selectedItem="{pageNo}" width="60"             />
+			<s:Button   id="m_DownPage"  label="{labels.downPage}"  click="f_DownPage_clickHandler(event)"  styleName="Paging_Down"   icon="{iconDownPage}"   width="60" height="22" />
+			<s:Button   id="m_LastPage"  label="{labels.lastPage}"  click="f_LastPage_clickHandler(event)"  styleName="Paging_Last"   icon="{iconLastPage}"   width="60" height="22" />
+		</s:HGroup>
+		
+		<s:HGroup id="m_GroupPLSQL" verticalAlign="baseline" left="0" top="0" visible="false" >
+			<s:Button   id="m_More"      label="{labels.more}"      click="f_More_clickHandler(event)"      styleName="Paging_More"   icon="{iconMore}"       width="60" height="22" />
+			<s:Button   id="m_All"       label="{labels.all}"       click="f_All_clickHandler(event)"       styleName="Paging_All"    icon="{iconAll}"        width="60" height="22" />	
+		</s:HGroup>
+		
+		<s:HGroup id="m_GroupPublic" verticalAlign="baseline" left="{this._gPublic_Left}" top="1">
+			<s:Button   id="m_Reload"    label="{labels.reload}"    click="f_Reload_clickHandler(event)"    styleName="Paging_Reload" icon="{iconReload}"     width="60" height="22" />
+			<mx:Spacer width="10" />
+			<s:Label    id="m_ShowSize"  text="{showSize} /" styleName="Paging_ShowSize" visible="false" />
+			<s:Label    id="m_TotalSize" text="{totalSize}"  styleName="Paging_Total" />
+		</s:HGroup>
+		
+	</s:Group>
+	
+	<s:HGroup left="{m_GroupLeft.width + 10}" right="10" top="8" horizontalAlign="right" verticalAlign="baseline">
+		<s:HSlider id="m_PagePerSize" 
+				   minimum="{pagePerSizeMin}" 
+				   maximum="{pagePerSizeMax}"
+				   snapInterval="{pageInterval}" 
+				   width="60" 
+				   toolTip="{labels.perSize}"
+				   changeEnd="f_PagePerSize_changeHandler(event)" />
+	</s:HGroup>
+	
+</s:Group>

@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemEditor xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			      xmlns:s="library://ns.adobe.com/flex/spark" 
+			      xmlns:mx="library://ns.adobe.com/flex/mx"
+				  creationComplete="creationCompleteHandler(event)">
+	
+	<!-- ZhengWei(HY) Create 2015-09-11 二维表格的编辑状态下的单元格式组件 -->
+	<!--                                目前支持有：1:下拉列表框、2:文本控件 -->
+	
+	<!-- 下面是应用场景样例。注意 parentDocument.parentDocument 的用法。
+	     也可以用 @{outerDocument.xx}
+	
+	<fx:Script>
+	
+		public function f_SetValue(i_Event:DataGridItemEditorEvent):void
+		{
+			...
+		}
+	
+	</fx:Script>
+	
+	<s:DataGrid>
+		<s:columns>
+			<s:ArrayList>
+				<s:GridColumn editable="true" headerText="参数值">
+					<s:itemRenderer>
+						<fx:Component>
+							<h:DataGridItemEditor fontWeight="normal" change="parentDocument.parentDocument.f_SetValue(event)" />
+						</fx:Component>
+					</s:itemRenderer>
+				</s:GridColumn>
+			</s:ArrayList>
+		</s:columns>
+	</s:DataGrid>
+	
+	-->
+	
+	<fx:Metadata>
+		[Event(name="showComplete" ,type="org.hy.common.ui.event.DataGridItemEditorEvent")]
+		[Event(name="change"       ,type="org.hy.common.ui.event.DataGridItemEditorEvent")]
+	</fx:Metadata>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			import org.hy.common.Help;
+			import org.hy.common.ui.event.DataGridItemEditorEvent;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			
+			
+			/** 编辑控件的类型 */
+			private var _editorType:String
+			
+			
+			/** 当为下拉列表控件时，是否自动打开下拉列表项。默认是自动打开的 */
+			private var _isAutoOpen:Boolean = true;
+			
+			/** 附属的参数对象。提供给第三方使用方额外保存数据用 */
+			private var _paramObj:Object;
+			
+			
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				if ( this.editorType == "comboBox" )
+				{
+					this.m_Value_ComboBox.visible          = true;
+					this.m_Value_ComboBox.includeInLayout  = true;
+					
+					this.m_Value_TextInput.visible         = false;
+					this.m_Value_TextInput.includeInLayout = false;
+					
+					if ( this._isAutoOpen )
+					{
+						this.m_Value_ComboBox.openDropDown();
+					}
+				}
+				else if ( this.editorType == "textInput" )
+				{
+					this.m_Value_ComboBox.visible          = false;
+					this.m_Value_ComboBox.includeInLayout  = false;
+					
+					this.m_Value_TextInput.visible         = true;
+					this.m_Value_TextInput.includeInLayout = true;
+				}
+				
+				this.dispatchEvent(new DataGridItemEditorEvent(this ,super.dataGrid ,super.data ,super.column ,this.getEditorUI() ,DataGridItemEditorEvent.$E_ShowComplete));
+			}
+			
+			
+			
+			override public function set data(i_Value:Object):void
+			{
+				super.data = i_Value;
+				
+				// 默认情况下将用 data 为textInput.text赋值
+				if ( super.data != null )
+				{
+					if ( this.editorType == "comboBox" )
+					{
+						this.m_Value_ComboBox.textInput.text = super.data.toString();
+					}
+					else if ( this.editorType == "textInput" )
+					{
+						this.m_Value_TextInput.text = super.data.toString();
+					}
+						
+				}
+				
+				this.dispatchEvent(new DataGridItemEditorEvent(this ,super.dataGrid ,super.data ,super.column ,this.getEditorUI() ,DataGridItemEditorEvent.$E_Change));
+			}
+			
+			
+			
+			protected function value_keyUpHandler(i_Event:KeyboardEvent):void
+			{
+				if ( this.editorType == "comboBox" )
+				{
+					this.value = this.m_Value_ComboBox.textInput.text;
+				}
+				else if ( this.editorType == "textInput" )
+				{
+					this.value = this.m_Value_TextInput.text;
+				}
+				
+				if ( i_Event.keyCode == 13 )
+				{
+					this.dispatchEvent(new DataGridItemEditorEvent(this ,super.dataGrid ,super.data ,super.column ,this.getEditorUI() ,DataGridItemEditorEvent.$E_Change));
+				}
+			}
+			
+			
+			
+			protected function value_ComboBox_changeHandler(event:IndexChangeEvent):void
+			{
+				this.value = this.m_Value_ComboBox.textInput.text;
+				
+				this.dispatchEvent(new DataGridItemEditorEvent(this ,super.dataGrid ,super.data ,super.column ,this.getEditorUI() ,DataGridItemEditorEvent.$E_Change));
+			}
+			
+			
+			
+			protected function value_TextInput_changeHandler(event:TextOperationEvent):void
+			{
+				this.value = this.m_Value_TextInput.text;
+				
+				this.dispatchEvent(new DataGridItemEditorEvent(this ,super.dataGrid ,super.data ,super.column ,this.getEditorUI() ,DataGridItemEditorEvent.$E_Change));
+			}
+			
+			
+			
+			protected function value_ComboBox_focusOutHandler(event:FocusEvent):void
+			{
+				this.value_ComboBox_changeHandler(null);
+			}
+			
+			
+			
+			/**
+			 * 获取编辑控件的对象实例
+			 */
+			protected function getEditorUI():UIComponent
+			{
+				if ( this.editorType == "comboBox" )
+				{
+					return this.m_Value_ComboBox;
+				}
+				else if ( this.editorType == "textInput" )
+				{
+					return this.m_Value_TextInput;
+				}
+				else
+				{
+					return this.m_Value_ComboBox;
+				}
+			}
+			
+			
+			
+			[Bindable]
+			[Inspectable(category="General", enumeration="comboBox,textInput", defaultValue="comboBox")]
+			public function set editorType(i_EditorType:String):void
+			{
+				this._editorType = i_EditorType;
+			}
+			
+			public function get editorType():String
+			{
+				return Help.NVL(this._editorType ,"comboBox");
+			}
+			
+			
+			
+			[Bindable]
+			public function set isAutoOpen(i_IsAutoOpen:Boolean):void
+			{
+				this._isAutoOpen = i_IsAutoOpen;
+			}
+			
+			public function get isAutoOpen():Boolean
+			{
+				return this._isAutoOpen;
+			}
+			
+			
+			
+			[Bindable]
+			public function set paramObj(i_ParamObj:Object):void
+			{
+				this._paramObj = i_ParamObj;
+			}
+			
+			public function get paramObj():Object
+			{
+				return this._paramObj;
+			}
+			
+			
+			
+			[Bindable]
+			public function set fontWeight(i_Value:String):void
+			{
+				this.getEditorUI().setStyle("fontWeight" ,i_Value);
+			}
+			
+			public function get fontWeight():String
+			{
+				return this.getEditorUI().getStyle("fontWeight");
+			}
+			
+			
+			
+			[Bindable]
+			public function set fontSize(i_Value:Number):void
+			{
+				this.getEditorUI().setStyle("fontSize" ,i_Value);
+			}
+			
+			public function get fontSize():Number
+			{
+				return this.getEditorUI().getStyle("fontSize");
+			}
+			
+			
+			
+			[Bindable]
+			public function set fontStyle(i_Value:String):void
+			{
+				this.getEditorUI().setStyle("fontStyle" ,i_Value);
+			}
+			
+			public function get fontStyle():String
+			{
+				return this.getEditorUI().getStyle("fontStyle");
+			}
+			
+			
+			
+			[Bindable]
+			public function set fontFamily(i_Value:String):void
+			{
+				this.getEditorUI().setStyle("fontFamily" ,i_Value);
+			}
+			
+			public function get fontFamily():String
+			{
+				return this.getEditorUI().getStyle("fontFamily");
+			}
+			
+			
+			
+			[Bindable]
+			public function set verticalAlign(i_Value:String):void
+			{
+				this.getEditorUI().setStyle("verticalAlign" ,i_Value);
+			}
+			
+			public function get verticalAlign():String
+			{
+				return this.getEditorUI().getStyle("verticalAlign");
+			}
+			
+			
+			
+			[Bindable]
+			public function set textAlign(i_Value:String):void
+			{
+				this.getEditorUI().setStyle("textAlign" ,i_Value);
+			}
+			
+			public function get textAlign():String
+			{
+				return this.getEditorUI().getStyle("textAlign");
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	
+	
+	<s:ComboBox id="m_Value_ComboBox" 
+			    width="100%" 
+			    height="100%" 
+			    textAlign="left"
+				keyUp="value_keyUpHandler(event)"
+				change="value_ComboBox_changeHandler(event)"
+				focusOut="value_ComboBox_focusOutHandler(event)" />
+	
+	<s:TextInput id="m_Value_TextInput" 
+				 width="100%" 
+				 height="100%" 
+				 textAlign="left"
+				 keyUp="value_keyUpHandler(event)"
+				 change="value_TextInput_changeHandler(event)"
+				 visible="false"
+				 includeInLayout="false" />
+	
+</s:GridItemEditor>

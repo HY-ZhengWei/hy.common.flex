@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<!-- ZhengWei(HY) Create 2015-12-07 可实现复选的下拉列表框。此为下拉列表框项的渲染器 -->
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	
+	<fx:Metadata>
+		[Event(name="showComplete" ,type="org.hy.common.ui.event.ComboBoxCheckItemRendererEvent")]
+		[Event(name="change"       ,type="org.hy.common.ui.event.ComboBoxCheckItemRendererEvent")]
+	</fx:Metadata>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import org.hy.common.ui.event.ComboBoxCheckItemRendererEvent;
+			
+			import spark.components.ComboBox;
+			
+			
+			
+			override public function set data(i_Value:Object):void
+			{
+				super.data = i_Value;
+				
+				// 默认情况下将用 data 为CheckBox赋值
+				if ( super.data != null )
+				{
+					this.m_CheckBox.label    = super.data.toString();
+					this.m_CheckBox.selected = false;
+				}
+				
+				this.dispatchEvent(new ComboBoxCheckItemRendererEvent(super.data ,this.m_CheckBox ,ComboBoxCheckItemRendererEvent.$E_ShowComplete));
+			}
+			
+			
+			
+			public function set showComplete(i_Fun:Function):void
+			{
+				this.addEventListener(ComboBoxCheckItemRendererEvent.$E_ShowComplete ,i_Fun);
+			}
+			
+			
+			
+			public function set change(i_Fun:Function):void
+			{
+				this.addEventListener(ComboBoxCheckItemRendererEvent.$E_Change ,i_Fun);
+			}
+			
+			
+			
+			protected function changeHandler(event:Event):void
+			{
+				this.dispatchEvent(new ComboBoxCheckItemRendererEvent(super.data ,this.m_CheckBox ,ComboBoxCheckItemRendererEvent.$E_Change));
+			}
+			
+			
+			
+			[Bindable]
+			public function set fontWeight(i_Value:String):void
+			{
+				this.m_CheckBox.setStyle("fontWeight" ,i_Value);
+			}
+			
+			public function get fontWeight():String
+			{
+				return this.m_CheckBox.getStyle("fontWeight");
+			}
+			
+			
+			
+			[Bindable]
+			public function set fontSize(i_Value:Number):void
+			{
+				this.m_CheckBox.setStyle("fontSize" ,i_Value);
+			}
+			
+			public function get fontSize():Number
+			{
+				return this.m_CheckBox.getStyle("fontSize");
+			}
+			
+			
+			
+			[Bindable]
+			public function set fontStyle(i_Value:String):void
+			{
+				this.m_CheckBox.setStyle("fontStyle" ,i_Value);
+			}
+			
+			public function get fontStyle():String
+			{
+				return this.m_CheckBox.getStyle("fontStyle");
+			}
+			
+			
+			
+			[Bindable]
+			public function set fontFamily(i_Value:String):void
+			{
+				this.m_CheckBox.setStyle("fontFamily" ,i_Value);
+			}
+			
+			public function get fontFamily():String
+			{
+				return this.m_CheckBox.getStyle("fontFamily");
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:CheckBox id="m_CheckBox" 
+				width="100%" 
+				height="100%" 
+				horizontalCenter="0"
+				verticalCenter="0"
+				change="changeHandler(event)"/>
+	
+</s:ItemRenderer>
