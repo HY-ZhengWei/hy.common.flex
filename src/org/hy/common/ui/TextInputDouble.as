@@ -43,6 +43,7 @@ package org.hy.common.ui
 	 *                                两个控制焦点的变量进行设定。防止界面不正确的显示。
 	 *              V5.0  2017-03-15  添加 FocusEvent.MOUSE_FOCUS_CHANGE 事件的监听。先键盘后鼠标改变焦点时（或先鼠标后键盘），的鼠标改变焦点的事件。
 	 *                                两个控制焦点的变量进行设定。防止界面不正确的显示。
+	 *              V6.0  2017-06-20  添加 高精度值为0.0001，四舍五入后为0.000时，显示科学记数法
 	 */
 	[Event(name="focusInTrue"  ,type="org.hy.common.ui.event.FocusEventTrue")]
 	[Event(name="focusOutTrue" ,type="org.hy.common.ui.event.FocusEventTrue")]
@@ -57,6 +58,9 @@ package org.hy.common.ui
 		
 		/** 用于显示的四舍五入的精度（默认为：3） */
 		private var _roundShow:uint;
+		
+		/** 四舍五入后的零值（默认为：0.000） */
+		private var _roundShowZero:String;
 		
 		/** 科学计数法下的四舍五入的精度（默认为：3） */
 		private var _roundScientific:uint;
@@ -144,7 +148,7 @@ package org.hy.common.ui
 			super();
 			
 			this._roundDouble     = 9;
-			this._roundShow       = 3;
+			this.roundShow        = 3;
 			this._roundScientific = 3;
 			this._focusIsValid    = true;
 			this._focusInCount    = 0;
@@ -677,7 +681,16 @@ package org.hy.common.ui
 					else
 					{
 						var v_TempText:String = Help.toFixed(v_Num ,this._roundShow);
-						this._hSkin.m_ShowText.text = this.text.length <= v_TempText.length ? this.text : v_TempText;
+						
+						if ( v_TempText == this._roundShowZero && v_Num != 0 )
+						{
+							// 高精度值为0.0001，四舍五入后为0.000时，显示科学记数法 ZhengWei(HY) Add 2017-06-20
+							this._hSkin.m_ShowText.text = this.text
+						}
+						else
+						{
+							this._hSkin.m_ShowText.text = this.text.length <= v_TempText.length ? this.text : v_TempText;
+						}
 					}
 				}
 				catch (error:Error)
@@ -727,7 +740,8 @@ package org.hy.common.ui
 		
 		public function set roundShow(i_RoundShow:uint):void
 		{
-			this._roundShow = i_RoundShow;
+			this._roundShow     = i_RoundShow;
+			this._roundShowZero = "0." + Help.rpad("" ,i_RoundShow ,"0");
 		}
 
 		

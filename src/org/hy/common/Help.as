@@ -777,6 +777,104 @@ package org.hy.common
 		
 		
 		/**
+		 * 字符串填充
+		 * 
+		 * 参见于StringHelp.java类中的pad(...)方法编写的
+		 * 
+		 * @param i_Str          原始字符串
+		 * @param i_TotalLength  填充后的总长度
+		 * @param i_PadStr       填充的字符串
+		 * @return
+		 * 
+		 * @author  ZhengWei(HY)
+		 * @version 1.0  2017-06-20
+		 */
+		public static function lpad(i_Value:* ,i_TotalLength:uint ,i_PadStr:String):String
+		{
+			return pad(i_Value ,i_TotalLength ,i_PadStr ,-1);
+		}
+		
+		
+		
+		/**
+		 * 字符串填充
+		 * 
+		 * 参见于StringHelp.java类中的pad(...)方法编写的
+		 * 
+		 * @param i_Str          原始字符串
+		 * @param i_TotalLength  填充后的总长度
+		 * @param i_PadStr       填充的字符串
+		 * @return
+		 * 
+		 * @author  ZhengWei(HY)
+		 * @version 1.0  2017-06-20
+		 */
+		public static function rpad(i_Value:* ,i_TotalLength:uint ,i_PadStr:String):String
+		{
+			return pad(i_Value ,i_TotalLength ,i_PadStr ,1);
+		}
+			
+		
+		
+		/**
+		 * 字符串填充
+		 * 
+		 * 参见于StringHelp.java类中的pad(...)方法编写的
+		 * 
+		 * @param i_Str          原始字符串
+		 * @param i_TotalLength  填充后的总长度
+		 * @param i_PadStr       填充的字符串
+		 * @param i_Way          填充方向。小于0，左则填充；大于0，右则填充
+		 * @return
+		 * 
+		 * @author  ZhengWei(HY)
+		 * @version 1.0  2017-06-20
+		 */
+		public static function pad(i_Value:* ,i_TotalLength:uint ,i_PadStr:String ,i_Way:int):String
+		{
+			var v_Str:String = "";
+			
+			if ( i_Value == null )
+			{
+				return null;
+			}
+			else if ( i_Value is String )
+			{
+				v_Str = i_Value as String;
+			}
+			else
+			{
+				v_Str = i_Value.toString();
+			}
+			
+			var v_Len:int  = v_Str.length;
+			var v_Buffer:String = "";
+			
+			if ( i_Way >= 0 )
+			{
+				v_Buffer += v_Str;
+			}
+			
+			for (var i:int=0; i<i_TotalLength-v_Len; i++)
+			{
+				v_Buffer += i_PadStr;
+			}
+			
+			if ( i_Way < 0 )
+			{
+				v_Buffer += v_Str;
+			}
+			
+			return v_Buffer;
+		}
+		
+		
+		
+		
+		
+		
+		
+		/**
 		 * 时间比较
 		 */
 		public static function toCompare(i_Date1:Date ,i_Date2:Date):int

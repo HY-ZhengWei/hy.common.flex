@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="org.hy.common.skins.mx.DividedBoxSkin"/>
+    <classEntry path="org.hy.common.ui.DividedBox"/>
+    <classEntry path="org.hy.common.Help"/>
+    <classEntry path="org.hy.common.ui.ButtonImage"/>
+    <classEntry path="org.hy.common.ui.event.ButtonImageEvent"/>
+    <classEntry path="org.hy.common.skins.ScrollerSkinParams"/>
+    <classEntry path="org.hy.common.skins.spark.ComboBoxSkin"/>
+    <classEntry path="org.hy.common.ui.event.DataGridItemRendererEvent"/>
+    <classEntry path="org.hy.common.WaitExecute"/>
+    <classEntry path="org.hy.common.ui.ComboBoxCheckItemRenderer"/>
+    <classEntry path="org.hy.common.ui.ComboBoxCheck"/>
+    <classEntry path="org.hy.common.ui.TextInput"/>
+    <classEntry path="org.hy.common.skins.spark.TextInputSkin"/>
+    <classEntry path="org.hy.common.ui.event.TextInputNo"/>
+    <classEntry path="org.hy.common.skins.spark.TextInputDoubleSkin_V2"/>
+    <classEntry path="org.hy.common.ui.ConditionGroup"/>
+    <classEntry path="org.hy.common.skins.spark.ListSKin"/>
+    <classEntry path="org.hy.common.ui.TimerMessage"/>
+    <classEntry path="org.hy.common.ui.event.FocusEventTrue"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>
