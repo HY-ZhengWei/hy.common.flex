@@ -305,6 +305,7 @@
 						widthInChars="10"
 						left="1" right="1" top="1" bottom="1"
 						visible="true"
+						multiline="false"
 						/>
     
     <!-- text -->
@@ -314,6 +315,7 @@
               			widthInChars="10"
               			left="1" right="1" top="1" bottom="1"
 						visible="false"
+						multiline="false"
 						/>
 	
 	<!-- ZhengWei(HY) Add 2015-12-09 顶部左边的提示三角形 -->
