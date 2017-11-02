@@ -19,6 +19,7 @@ package org.hy.common
 	import mx.binding.utils.BindingUtils;
 	import mx.collections.ArrayCollection;
 	import mx.collections.IList;
+	import mx.controls.Alert;
 	import mx.controls.ComboBox;
 	import mx.controls.Text;
 	import mx.controls.TextInput;
@@ -56,9 +57,53 @@ package org.hy.common
 	public class Help
 	{
 		
+		/** Alert对话框Yes按钮的标题。用于临时改变显示文字，在使用完成后再恢复原文字的功能 */
+		private static var $AlertLabel_Yes   :String;
+		
+		/** Alert对话框No按钮的标题。用于临时改变显示文字，在使用完成后再恢复原文字的功能 */
+		private static var $AlertLabel_No    :String;
+		
+		/** Alert对话框OK按钮的标题。用于临时改变显示文字，在使用完成后再恢复原文字的功能 */
+		private static var $AlertLabel_OK    :String;
+		
+		/** Alert对话框Cancel按钮的标题。用于临时改变显示文字，在使用完成后再恢复原文字的功能 */
+		private static var $AlertLabel_Cancel:String;
+		
+		
+		
 		public function Help()
 		{
 			// 无法定义 private 类型的构造器，为了性能建议不要new则类。
+		}
+		
+		
+		
+		/**
+		 * 备份：Alert对话框按钮的标题
+		 * 
+		 * @version 1.0  2017-11-02
+		 */
+		public static function alertLabel_Backup():void
+		{
+			$AlertLabel_Yes    = Alert.yesLabel;
+			$AlertLabel_No     = Alert.noLabel;
+			$AlertLabel_OK     = Alert.okLabel;
+			$AlertLabel_Cancel = Alert.cancelLabel;
+		}
+		
+		
+		
+		/**
+		 * 恢复：Alert对话框按钮的标题
+		 * 
+		 * @version 1.0  2017-11-02
+		 */
+		public static function alertLabel_Recovery():void
+		{
+			Alert.yesLabel    = $AlertLabel_Yes;
+			Alert.noLabel     = $AlertLabel_No;
+			Alert.okLabel     = $AlertLabel_OK;
+			Alert.cancelLabel = $AlertLabel_Cancel;
 		}
 		
 		
