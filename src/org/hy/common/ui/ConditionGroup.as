@@ -37,6 +37,8 @@ package org.hy.common.ui
 		[Bindable]
 		public var maxCondition:uint = 0;
 		
+		
+		
 		/** 
 		 * 创建条件面板的方法，由使用者来实现。
 		 * 方法没有入参
@@ -67,7 +69,14 @@ package org.hy.common.ui
 		{
 			if ( this.newChildFun != null )
 			{
-				return this.newChildFun.call();
+				var v_ConditionUI:UIComponent = this.newChildFun.call();
+				
+				if ( v_ConditionUI != null )
+				{
+					this.conditions.addItem(v_ConditionUI);
+				}
+				
+				return v_ConditionUI;
 			}
 			else
 			{
@@ -143,6 +152,20 @@ package org.hy.common.ui
 			{
 				Alert.show("最小为" + Math.max(this.minCondition ,1) + "个" ,"提示");
 			}
+		}
+		
+		
+		
+		/**
+		 * 获取第几位置上的条件面板对象。下标从0开始。
+		 * 
+		 * @author      ZhengWei(HY)
+		 * @createDate  2017-11-14
+		 * @version     V1.0
+		 */
+		public function getCondition(i_Index:uint):UIComponent
+		{
+			return (this.getElementAt(i_Index) as HGroup).getElementAt(0) as UIComponent;
 		}
 		
 		
