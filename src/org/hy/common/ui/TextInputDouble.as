@@ -1,6 +1,8 @@
 package org.hy.common.ui
 {
+	import flash.display.InteractiveObject;
 	import flash.events.FocusEvent;
+	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	
 	import mx.collections.ArrayCollection;
@@ -34,16 +36,17 @@ package org.hy.common.ui
 	 * @createDate  2016-08-25
 	 * @version     V1.0
 	 * @version     V2.0  2016-11-23  发现TextInputDouble_V1存在严重的Bug，固弃之。
-	 *                                Bug：当鼠标点击进入文本框时（TextInputDouble_V1整体获取焦点时），
+	 *                                解决：当鼠标点击进入文本框时（TextInputDouble_V1整体获取焦点时），
 	 *                                     会触发两次焦点进入事件 FocusEvent.FOCUS_IN ，
 	 *                                     同时，在两次焦点进入事件的中间，还会触发一次焦点离开事件 FocusEvent.FOCUS_OUT 。
 	 * 
-	 *              V3.0  2016-11-24  通过自定义焦点事件的方式，提供给外界最靠谱的焦点进入(或离开)事件，间接的解决上面的Bug。
-	 *              V4.0  2017-02-23  添加 FocusEvent.KEY_FOCUS_CHANGE 事件的监听。键盘改变焦点的事件。如 Tab键快速切换焦点。
-	 *                                两个控制焦点的变量进行设定。防止界面不正确的显示。
-	 *              V5.0  2017-03-15  添加 FocusEvent.MOUSE_FOCUS_CHANGE 事件的监听。先键盘后鼠标改变焦点时（或先鼠标后键盘），的鼠标改变焦点的事件。
-	 *                                两个控制焦点的变量进行设定。防止界面不正确的显示。
-	 *              V6.0  2017-06-20  添加 高精度值为0.0001，四舍五入后为0.000时，显示科学记数法
+	 *              V3.0  2016-11-24  解决：通过自定义焦点事件的方式，提供给外界最靠谱的焦点进入(或离开)事件，间接的解决上面的Bug。
+	 *              V4.0  2017-02-23  添加：FocusEvent.KEY_FOCUS_CHANGE 事件的监听。键盘改变焦点的事件。如 Tab键快速切换焦点。
+	 *                                     两个控制焦点的变量进行设定。防止界面不正确的显示。
+	 *              V5.0  2017-03-15  添加：FocusEvent.MOUSE_FOCUS_CHANGE 事件的监听。先键盘后鼠标改变焦点时（或先鼠标后键盘），的鼠标改变焦点的事件。
+	 *                                     两个控制焦点的变量进行设定。防止界面不正确的显示。
+	 *              V6.0  2017-06-20  添加：高精度值为0.0001，四舍五入后为0.000时，显示科学记数法
+	 *              V7.0  2017-12-07  解决：通过 setFocus(UI对象) 设置焦点时(如回车自动跳下一行)，无法正确触发 FocusEventTrue 事件的问题。
 	 */
 	[Event(name="focusInTrue"  ,type="org.hy.common.ui.event.FocusEventTrue")]
 	[Event(name="focusOutTrue" ,type="org.hy.common.ui.event.FocusEventTrue")]
@@ -492,8 +495,31 @@ package org.hy.common.ui
 		
 		
 		
+		override public function setFocus():void
+		{
+			super.setFocus();
+		}
+		
+		
+		
 		protected function FocusInHandler(i_Event:FocusEvent):void
 		{
+			// trace(Help.NVL(this.id ,"无ID") + "\t FocusInHandler...\t" + " focusInCount = " + this._focusInCount + "  focusOutCount =  " + this._focusOutCount);
+			
+			if ( this._hSkin != null && this._hSkin.textDisplay != null )
+			{
+				if ( this._focusInCount <= 0 && this._hSkin.textDisplay.getFocus()["id"] == "textDisplay" )
+				{
+					// trace(Help.NVL(this.id ,"无ID") + "\t trigger FocusEventTrue.FOCUS_IN");
+					// 2017-12-07 解决：通过 setFocus(UI对象) 设置焦点时(如回车自动跳下一行)，无法正确触发 FocusEventTrue 事件的问题。
+					this.dispatchEvent(new FocusEventTrue(FocusEventTrue.FOCUS_IN ,i_Event));
+					this._focusInCount  = 0;
+					this._focusOutCount = -1;
+					this.hideText();
+					return;
+				}
+			}
+			
 			this._focusInCount++;
 			
 			if ( this._focusInCount % 2 == 0 )
@@ -510,6 +536,7 @@ package org.hy.common.ui
 				// 所以，当 this.hideText() 真正执行完成时，this._focusInCount++ 它已执行了两次。
 				if ( this._focusInCount % 4 == 0 )
 				{
+					// trace(Help.NVL(this.id ,"无ID") + "\t trigger FocusEventTrue.FOCUS_IN");
 					this.dispatchEvent(new FocusEventTrue(FocusEventTrue.FOCUS_IN ,i_Event));
 				}
 			}
@@ -519,6 +546,8 @@ package org.hy.common.ui
 		
 		protected function FocusOutHandler(i_Event:FocusEvent):void
 		{
+			// trace(Help.NVL(this.id ,"无ID") + "\t FocusOutHandler...\t" + " focusInCount = " + this._focusInCount + "  focusOutCount =  " + this._focusOutCount);
+			
 			this._focusOutCount++;
 			
 			if ( this._focusOutCount % 2 == 1 )
@@ -528,6 +557,7 @@ package org.hy.common.ui
 			else
 			{
 				this.showText();
+				// trace(Help.NVL(this.id ,"无ID") + "\t trigger FocusEventTrue.FOCUS_OUT");
 				this.dispatchEvent(new FocusEventTrue(FocusEventTrue.FOCUS_OUT ,i_Event));
 			}
 		}
@@ -543,6 +573,8 @@ package org.hy.common.ui
 		 */
 		protected function KeyFocusChangeHandler(i_Event:FocusEvent):void
 		{
+			// trace(Help.NVL(this.id ,"无ID") + "\t KeyFocusChangeHandler...\t" + " focusInCount = " + this._focusInCount + "  focusOutCount =  " + this._focusOutCount);
+			
 			if ( null != this._hSkin && null != this._hSkin.m_ShowText )
 			{
 				if ( this._hSkin.textDisplay.visible )
@@ -569,6 +601,8 @@ package org.hy.common.ui
 		 */
 		protected function MouseFocusChangeHandler(i_Event:FocusEvent):void
 		{
+			// trace(Help.NVL(this.id ,"无ID") + "\t MouseFocusChangeHandler...\t" + " focusInCount = " + this._focusInCount + "  focusOutCount =  " + this._focusOutCount);
+			
 			if ( null != this._hSkin && null != this._hSkin.m_ShowText )
 			{
 				if ( this._hSkin.textDisplay.visible )
@@ -722,7 +756,6 @@ package org.hy.common.ui
 			if ( null != this._hSkin && null != this._hSkin.m_ShowText )
 			{
 				// trace(this.id + "  FocusInHandler ......." + (new Date()).toString());
-				
 				this._hSkin.textDisplay.visible = true;
 				this._hSkin.m_ShowText .visible = false;
 				this._hSkin.textDisplay.setFocus();
