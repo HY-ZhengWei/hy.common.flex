@@ -1,21 +1,17 @@
 package org.hy.common.ui
 {
-	import flash.display.InteractiveObject;
 	import flash.events.FocusEvent;
-	import flash.events.KeyboardEvent;
-	import flash.events.MouseEvent;
 	
 	import mx.collections.ArrayCollection;
-	import mx.core.UIComponent;
 	import mx.events.FlexEvent;
+	
+	import spark.components.TextInput;
+	import spark.events.TextOperationEvent;
 	
 	import org.hy.common.Help;
 	import org.hy.common.skins.spark.TextInputDoubleSkin;
 	import org.hy.common.ui.event.EventInfo;
 	import org.hy.common.ui.event.FocusEventTrue;
-	
-	import spark.components.TextInput;
-	import spark.events.TextOperationEvent;
 	
 	
 	
@@ -47,6 +43,10 @@ package org.hy.common.ui
 	 *                                     两个控制焦点的变量进行设定。防止界面不正确的显示。
 	 *              V6.0  2017-06-20  添加：高精度值为0.0001，四舍五入后为0.000时，显示科学记数法
 	 *              V7.0  2017-12-07  解决：通过 setFocus(UI对象) 设置焦点时(如回车自动跳下一行)，无法正确触发 FocusEventTrue 事件的问题。
+	 *              V8.0  2018-10-15  添加：允许长度。
+	 *                                        如允许长度为6时，1.2345678 将显示为 1.23457；
+	 *                                        如允许长度为6时，1234.5678 将显示为 1234.57；
+	 *                                        如允许长度为6时，0.000001  将显示为 1.000E-6；
 	 */
 	[Event(name="focusInTrue"  ,type="org.hy.common.ui.event.FocusEventTrue")]
 	[Event(name="focusOutTrue" ,type="org.hy.common.ui.event.FocusEventTrue")]
@@ -68,6 +68,8 @@ package org.hy.common.ui
 		/** 科学计数法下的四舍五入的精度（默认为：3） */
 		private var _roundScientific:uint;
 		
+		/** 允许长度。不包括小数点的长度（如：123.456 = 6位长度）。等于0时，此功能不生效 */
+		private var _allowLen:uint;
 		
 		
 		
@@ -153,6 +155,7 @@ package org.hy.common.ui
 			this._roundDouble     = 9;
 			this.roundShow        = 3;
 			this._roundScientific = 3;
+			this._allowLen        = 0;
 			this._focusIsValid    = true;
 			this._focusInCount    = 0;
 			this._focusOutCount   = 0;
@@ -691,12 +694,8 @@ package org.hy.common.ui
 				{
 					try
 					{
-						var v_NumText:Number = Help.toNumber(this.text);
-						
-						if ( !isNaN(v_NumText) )
-						{
-							super.text = Help.toScientificNotation(v_NumText ,this._roundShow + 1 ,this._roundScientific ,this._roundDouble);
-						}
+						// 保存用户的编辑的内容
+						super.text = this.text;
 					}
 					catch (error:Error)
 					{
@@ -714,16 +713,45 @@ package org.hy.common.ui
 					}
 					else
 					{
-						var v_TempText:String = Help.toFixed(v_Num ,this._roundShow);
-						
-						if ( v_TempText == this._roundShowZero && v_Num != 0 )
+						if ( this._allowLen > 0 && this.text.indexOf(".") >= 0 )
 						{
-							// 高精度值为0.0001，四舍五入后为0.000时，显示科学记数法 ZhengWei(HY) Add 2017-06-20
-							this._hSkin.m_ShowText.text = this.text
+							var v_NumArr:Array    = this.text.split(".");
+							var v_NumShort:Number = v_Num;
+							
+							if ( v_NumArr[0].length >= this._allowLen )
+							{
+								v_NumShort = Help.toNumber(v_NumArr[0]);
+							}
+							else
+							{
+								v_NumShort = Help.round(v_Num ,this._allowLen - v_NumArr[0].length);
+							}
+							
+							if ( v_NumShort == 0 && v_Num != 0 )
+							{
+								// 高精度值为0.0001，四舍五入后为0.000时，显示科学记数法 ZhengWei(HY) Add 2018-10-15
+								this._hSkin.m_ShowText.text = Help.toScientificNotation(v_Num ,this._roundShow + 1 ,this._roundScientific ,this._roundDouble);
+							}
+							else
+							{
+								this._hSkin.m_ShowText.text = v_NumShort.toString();
+							}
 						}
 						else
 						{
-							this._hSkin.m_ShowText.text = this.text.length <= v_TempText.length ? this.text : v_TempText;
+							// 科学计数 与 四舍五入计数对比后，谁短显示谁
+							var v_TextScien:String = Help.toScientificNotation(v_Num ,this._roundShow + 1 ,this._roundScientific ,this._roundDouble);
+							var v_TextRound:String = Help.toFixed(v_Num ,this._roundShow);
+							
+							if ( v_TextRound == this._roundShowZero && v_Num != 0 )
+							{
+								// 高精度值为0.0001，四舍五入后为0.000时，显示科学记数法 ZhengWei(HY) Add 2017-06-20
+								this._hSkin.m_ShowText.text = v_TextScien;
+							}
+							else
+							{
+								this._hSkin.m_ShowText.text = v_TextScien.length <= v_TextRound.length ? v_TextScien : v_TextRound;
+							}
 						}
 					}
 				}
@@ -827,6 +855,20 @@ package org.hy.common.ui
 		public function set roundDouble(value:uint):void
 		{
 			_roundDouble = value;
+		}
+		
+		
+		
+		/** 允许长度。不包括小数点的长度（如：123.456 = 6位长度）。等于0时，此功能不生效 */
+		[Bindable]
+		public function get allowLen():uint
+		{
+			return _allowLen;
+		}
+		
+		public function set allowLen(value:uint):void
+		{
+			_allowLen = value;
 		}
 		
 		

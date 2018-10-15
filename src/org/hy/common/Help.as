@@ -5,10 +5,8 @@ package org.hy.common
 	import flash.display.IBitmapDrawable;
 	import flash.events.ContextMenuEvent;
 	import flash.events.MouseEvent;
-	import flash.events.SyncEvent;
 	import flash.external.ExternalInterface;
 	import flash.geom.Matrix;
-	import flash.system.Capabilities;
 	import flash.system.System;
 	import flash.ui.ContextMenu;
 	import flash.ui.ContextMenuItem;
@@ -21,7 +19,6 @@ package org.hy.common
 	import mx.collections.IList;
 	import mx.controls.Alert;
 	import mx.controls.ComboBox;
-	import mx.controls.Text;
 	import mx.controls.TextInput;
 	import mx.core.Singleton;
 	import mx.core.UIComponent;
