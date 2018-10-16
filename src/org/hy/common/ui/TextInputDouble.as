@@ -715,27 +715,7 @@ package org.hy.common.ui
 					{
 						if ( this._allowLen > 0 && this.text.indexOf(".") >= 0 )
 						{
-							var v_NumArr:Array    = this.text.split(".");
-							var v_NumShort:Number = v_Num;
-							
-							if ( v_NumArr[0].length >= this._allowLen )
-							{
-								v_NumShort = Help.toNumber(v_NumArr[0]);
-							}
-							else
-							{
-								v_NumShort = Help.round(v_Num ,this._allowLen - v_NumArr[0].length);
-							}
-							
-							if ( v_NumShort == 0 && v_Num != 0 )
-							{
-								// 高精度值为0.0001，四舍五入后为0.000时，显示科学记数法 ZhengWei(HY) Add 2018-10-15
-								this._hSkin.m_ShowText.text = Help.toScientificNotation(v_Num ,this._roundShow + 1 ,this._roundScientific ,this._roundDouble);
-							}
-							else
-							{
-								this._hSkin.m_ShowText.text = v_NumShort.toString();
-							}
+							this._hSkin.m_ShowText.text = Help.toSimplify(v_Num ,6 ,2);
 						}
 						else
 						{

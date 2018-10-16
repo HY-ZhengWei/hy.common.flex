@@ -33,8 +33,6 @@ package org.hy.common
 	import mx.utils.ObjectUtil;
 	import mx.utils.StringUtil;
 	
-	import org.hy.common.ui.TimerMessage;
-	
 	import spark.collections.Sort;
 	import spark.collections.SortField;
 	import spark.components.Button;
@@ -42,6 +40,8 @@ package org.hy.common
 	import spark.components.Label;
 	import spark.components.TextArea;
 	import spark.components.TextInput;
+	
+	import org.hy.common.ui.TimerMessage;
 
 	
 	
@@ -814,6 +814,45 @@ package org.hy.common
 			var v_RetOrigi:String = i_Num.toString();
 			var v_RetFixed:String = i_Num.toFixed(i_Round);
 			return v_RetOrigi.length <= v_RetFixed.length ? v_RetOrigi : v_RetFixed;
+		}
+		
+		
+		
+		public static function toSimplify(i_Num:Number ,i_AllowLen:uint ,i_RoundScientific:uint):String
+		{
+			if ( isNaN(i_Num) )
+			{
+				return "";
+			}
+			else if ( i_AllowLen > 0 )
+			{
+				var v_NumText:String = i_Num.toString();
+				if ( v_NumText.indexOf(".") >= 0 )
+				{
+					var v_NumArr:Array    = v_NumText.split(".");
+					var v_NumShort:Number = i_Num;
+					
+					if ( v_NumArr[0].length >= i_AllowLen )
+					{
+						v_NumShort = Help.toNumber(v_NumArr[0]);
+					}
+					else
+					{
+						var v_Digit:uint = i_AllowLen - v_NumArr[0].length;
+						v_NumShort = Help.round(i_Num ,v_Digit);
+						
+						if ( v_NumShort == 0 && i_Num != 0 )
+						{
+							// 高精度值为0.0001，四舍五入后为0.000时，显示科学记数法 ZhengWei(HY) Add 2018-10-15
+							return Help.toScientificNotation(i_Num ,v_Digit + 1 ,i_RoundScientific ,v_Digit + 1);
+						}
+					}
+					
+					return v_NumShort.toString();
+				}
+			}
+			
+			return i_Num.toString();
 		}
 		
 		
