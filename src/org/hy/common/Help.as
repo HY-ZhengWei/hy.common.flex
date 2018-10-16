@@ -50,6 +50,11 @@ package org.hy.common
 	 * 
 	 * @author  ZhengWei(HY)
 	 * @version 1.0  2015-07-13
+	 *          2.0  2018-10-16  添加：toSimplify()允许长度。
+	 *                                   如允许长度为6时，1234567890.1 将显示为 1234567890；
+	 *                                   如允许长度为6时，1.2345678    将显示为 1.23457；
+	 *                                   如允许长度为6时，1234.5678    将显示为 1234.57；
+	 *                                   如允许长度为6时，0.000001     将显示为 1.000E-6；
 	 */
 	public class Help
 	{
@@ -818,6 +823,21 @@ package org.hy.common
 		
 		
 		
+		/**
+		 * 简化显示数字，显示允许的长度。
+		 * 
+		 *   如允许长度为6时，1234567890.1 将显示为 1234567890；
+		 *   如允许长度为6时，1.2345678    将显示为 1.23457；
+		 *   如允许长度为6时，1234.5678    将显示为 1234.57；
+		 *   如允许长度为6时，0.000001     将显示为 1.000E-6；
+		 * 
+		 * @param i_Num              数字
+		 * @param i_AllowLen         允许长度
+		 * @param i_RoundScientific  如果启用了科学计数后，科学计数的显示小数位数（四舍五入）
+		 * 
+		 * @author  ZhengWei(HY)
+		 * @version 1.0  2018-10-16
+		 */
 		public static function toSimplify(i_Num:Number ,i_AllowLen:uint ,i_RoundScientific:uint):String
 		{
 			if ( isNaN(i_Num) )
